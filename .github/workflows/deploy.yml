@@ -1,0 +1,40 @@
+name: Deploy Static HTML
+
+on:
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build and deploy gh-pages
+    env:
+      commit_secret: ${{ secrets.GITHUB_TOKEN }}
+      USER_NAME   : ${{ github.actor }}
+      USER_EMAIL  : doveliu0516@gmail.com
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: Copy static files
+        run: |
+          mkdir -p out
+          cp -r * out
+
+      - name: Create .nojekyll file
+        run: touch out/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        run: |
+          cd ./out
+          git init
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git status
+          git remote add origin https://${{secrets.COMMIT_SECRET}}@github.com/[username]/[repo-name].git
+          git checkout -b gh-pages
+          git add --all
+          git commit -m "Deploy static HTML to gh-pages" 
+          git push origin gh-pages -f
+          echo "🤘 Deploy gh-pages complete."
